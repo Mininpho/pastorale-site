@@ -6,5 +6,5 @@ export const documents = pgTable("documents", {
   description: text("description"),
   categorie: varchar("categorie", { length: 50 }).notNull(),
   url: text("url").notNull(),
-  date: timestamp("date", { withTimezone: true }).notNull(),
+  date: timestamp("date", { withTimezone: true }).defaultNow().notNull(),
 });

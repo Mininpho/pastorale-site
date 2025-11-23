@@ -131,7 +131,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="max-w-5xl mx-auto px-4 py-8 text-[12px] text-gray-700 flex flex-col md:flex-row justify-between items-center gap-3">
 
           <span className="opacity-80">
-            © {new Date().getFullYear()} Unité pastorale — Tous droits réservés.
+            © {new Date().getFullYear()} Unité pastorale Gilly-Ransart — Tous droits réservés.
           </span>
 
           <div className="flex items-center gap-4">
@@ -148,7 +148,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
               href="mailto:katalyst@live.be"
               className="opacity-50 hover:opacity-100 transition italic"
             >
-              Designed by Mickael R.
+              Webmaster : Mickael R.
             </a>
           </div>
         </div>

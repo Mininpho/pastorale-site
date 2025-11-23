@@ -1,22 +1,18 @@
+// app/(public)/documents/page.tsx
+import { db } from "@/lib/db";
+import { documents } from "@/lib/schema.documents";
+import { desc } from "drizzle-orm";
+
 export const dynamic = "force-dynamic";
 
 export default async function DocumentsPage() {
-  // --- URL absolue (fallback local si NEXT_PUBLIC_BASE_URL est vide) ---
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  // 📌 Charger les documents depuis PostgreSQL
+  const docs = await db
+    .select()
+    .from(documents)
+    .orderBy(desc(documents.date));
 
-  // --- Appel API Documents ---
-  const res = await fetch(`${baseUrl}/api/documents/get`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Impossible de charger les documents");
-  }
-
-  const documents = await res.json();
-
-  // Catégories affichées
+  // Catégories d'affichage
   const categories = [
     { value: "informations", label: "Informations générales" },
     { value: "horaires", label: "Horaires & célébrations" },
@@ -28,7 +24,7 @@ export default async function DocumentsPage() {
   return (
     <div className="min-h-screen py-12 bg-marialLight/50">
       <div className="max-w-5xl mx-auto px-4">
-        
+
         {/* HEADER */}
         <header className="mb-10 text-center">
           <p className="text-[11px] tracking-[0.3em] uppercase text-marial mb-2">
@@ -45,8 +41,8 @@ export default async function DocumentsPage() {
           </p>
         </header>
 
-        {/* Aucune entrée */}
-        {documents.length === 0 && (
+        {/* SI AUCUN DOC */}
+        {docs.length === 0 && (
           <p className="text-gray-600 text-center text-sm">
             Aucun document n’a encore été ajouté.
           </p>
@@ -55,9 +51,9 @@ export default async function DocumentsPage() {
         {/* LISTE DES CATÉGORIES */}
         <div className="space-y-10">
           {categories.map((cat) => {
-            const docs = documents.filter((d: any) => d.categorie === cat.value);
+            const filtered = docs.filter((d) => d.categorie === cat.value);
 
-            if (docs.length === 0) return null;
+            if (filtered.length === 0) return null;
 
             return (
               <section key={cat.value}>
@@ -65,7 +61,7 @@ export default async function DocumentsPage() {
 
                 <div className="bg-white border border-marial/20 rounded-2xl p-6 shadow-lg shadow-marial/10">
                   <ul className="space-y-4">
-                    {docs.map((doc: any) => (
+                    {filtered.map((doc) => (
                       <li
                         key={doc.id}
                         className="flex justify-between items-center p-3 bg-[#fdfbf7] border border-marial/20 rounded-xl"
@@ -83,18 +79,20 @@ export default async function DocumentsPage() {
                           <a
                             href={doc.url}
                             target="_blank"
-                            className="px-4 py-1.5 rounded-lg bg-marial text-white text-sm font-semibold shadow hover:bg-marialDark transition flex items-center gap-1"
+                            className="px-4 py-1.5 rounded-lg bg-marial text-white text-sm font-semibold shadow hover:bg-marialDark transition"
                           >
                             Voir
                           </a>
 
                           {/* TÉLÉCHARGER */}
                           <a
-                            href={`/api/download?url=${encodeURIComponent(doc.url)}&filename=${encodeURIComponent(doc.titre.replace(/\s+/g, "_") + ".pdf")}`}
-                            className="px-4 py-1.5 rounded-lg bg-marial/10 border border-marial/40 text-marial text-sm font-semibold hover:bg-marial/20 transition flex items-center gap-1"
+                            href={doc.url}
+                            download
+                            className="px-4 py-1.5 rounded-lg bg-marial/10 border border-marial/40 text-marial text-sm font-semibold hover:bg-marial/20 transition"
                           >
                             Télécharger
                           </a>
+
                         </div>
                       </li>
                     ))}
@@ -104,6 +102,7 @@ export default async function DocumentsPage() {
             );
           })}
         </div>
+
       </div>
     </div>
   );
