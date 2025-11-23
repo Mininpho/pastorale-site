@@ -1,11 +1,26 @@
-import fs from "fs";
-import path from "path";
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { sacrements } from "@/lib/schema.sacrements";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const filePath = path.join(process.cwd(), "lib", "sacrements-contacts.json");
-  const raw = fs.readFileSync(filePath, "utf8");
-  const data = JSON.parse(raw);
+  try {
+    const data = await db.select().from(sacrements);
 
-  return NextResponse.json(data);
+    // Renvoi sous forme d’objet { id: { personne, telephone, email } }
+    const map: Record<string, any> = {};
+    data.forEach((item) => {
+      map[item.id] = {
+        personne: item.personne,
+        telephone: item.telephone,
+        email: item.email,
+      };
+    });
+
+    return NextResponse.json(map);
+  } catch (err) {
+    console.error("Erreur GET sacrements:", err);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
 }

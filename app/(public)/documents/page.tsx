@@ -1,28 +1,34 @@
-import fs from "fs";
-import path from "path";
-
 export const dynamic = "force-dynamic";
 
-// Catégories affichées
-const categories = [
-  { value: "informations", label: "Informations générales" },
-  { value: "horaires", label: "Horaires & célébrations" },
-  { value: "sacrements", label: "Sacrements" },
-  { value: "jeunesse", label: "Jeunesse / Catéchèse" },
-  { value: "administratif", label: "Documents administratifs" },
-];
+export default async function DocumentsPage() {
+  // --- URL absolue (fallback local si NEXT_PUBLIC_BASE_URL est vide) ---
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-export default function DocumentsPage() {
-  const filePath = path.join(process.cwd(), "lib", "documents.json");
+  // --- Appel API Documents ---
+  const res = await fetch(`${baseUrl}/api/documents/get`, {
+    cache: "no-store",
+  });
 
-  const documents = fs.existsSync(filePath)
-    ? JSON.parse(fs.readFileSync(filePath, "utf8"))
-    : [];
+  if (!res.ok) {
+    throw new Error("Impossible de charger les documents");
+  }
+
+  const documents = await res.json();
+
+  // Catégories affichées
+  const categories = [
+    { value: "informations", label: "Informations générales" },
+    { value: "horaires", label: "Horaires & célébrations" },
+    { value: "sacrements", label: "Sacrements" },
+    { value: "jeunesse", label: "Jeunesse / Catéchèse" },
+    { value: "administratif", label: "Documents administratifs" },
+  ];
 
   return (
     <div className="min-h-screen py-12 bg-marialLight/50">
       <div className="max-w-5xl mx-auto px-4">
-
+        
         {/* HEADER */}
         <header className="mb-10 text-center">
           <p className="text-[11px] tracking-[0.3em] uppercase text-marial mb-2">
@@ -73,30 +79,23 @@ export default function DocumentsPage() {
 
                         <div className="flex gap-2">
 
-                          {/* BOUTON VOIR */}
+                          {/* VOIR */}
                           <a
                             href={doc.url}
                             target="_blank"
                             className="px-4 py-1.5 rounded-lg bg-marial text-white text-sm font-semibold shadow hover:bg-marialDark transition flex items-center gap-1"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H3m12 0l-4-4m4 4l-4 4m8-10v12" />
-                            </svg>
                             Voir
                           </a>
 
-                          {/* BOUTON TÉLÉCHARGER — via API */}
+                          {/* TÉLÉCHARGER */}
                           <a
                             href={`/api/download?url=${encodeURIComponent(doc.url)}&filename=${encodeURIComponent(doc.titre.replace(/\s+/g, "_") + ".pdf")}`}
                             className="px-4 py-1.5 rounded-lg bg-marial/10 border border-marial/40 text-marial text-sm font-semibold hover:bg-marial/20 transition flex items-center gap-1"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4m-10 8h12" />
-                            </svg>
                             Télécharger
                           </a>
                         </div>
-
                       </li>
                     ))}
                   </ul>
@@ -105,7 +104,6 @@ export default function DocumentsPage() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

@@ -1,15 +1,22 @@
 // app/admin/messes/page.tsx
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { eglises, messes } from "@/lib/schema.messes";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminMessesPage() {
-  const filePath = path.join(process.cwd(), "lib", "horaires.json");
+export default async function AdminMessesPage() {
+  // Récupération des églises dans l'ordre original
+  const eglisesList = await db.select().from(eglises).orderBy(eglises.id);
 
-  const eglises = fs.existsSync(filePath)
-    ? JSON.parse(fs.readFileSync(filePath, "utf8"))
-    : [];
+  // Récupération de toutes les messes
+  const messesList = await db.select().from(messes);
+
+  // Reconstruction : église → messes[]
+  const eglisesCompletes = eglisesList.map((e) => ({
+    ...e,
+    messes: messesList.filter((m) => m.egliseId === e.id),
+  }));
 
   const inputClass =
     "w-full p-1 border border-orlit/30 rounded bg-black/20 text-fond text-xs";
@@ -22,7 +29,7 @@ export default function AdminMessesPage() {
       </p>
 
       <div className="space-y-6">
-        {eglises.map((eglise: any) => (
+        {eglisesCompletes.map((eglise: any) => (
           <div
             key={eglise.id}
             className="border border-orlit/30 rounded-xl p-4 space-y-3"
@@ -30,59 +37,56 @@ export default function AdminMessesPage() {
             <h2 className="font-semibold mb-1">
               {eglise.nom}
               {eglise.lieu && (
-                <span className="text-xs text-gray-400"> – {eglise.lieu}</span>
+                <span className="text-xs text-gray-400">
+                  {" "}
+                  – {eglise.lieu}
+                </span>
               )}
             </h2>
 
             {/* Liste des messes existantes */}
             <div className="space-y-2">
-              {(!eglise.messes || eglise.messes.length === 0) && (
+              {eglise.messes.length === 0 && (
                 <p className="text-xs text-gray-500">
                   Aucune messe renseignée.
                 </p>
               )}
 
-              {eglise.messes &&
-                eglise.messes.map((messe: any) => (
-                  <div
-                    key={messe.id}
-                    className="flex justify-between items-center text-sm bg-black/20 rounded-lg px-3 py-2"
-                  >
+              {eglise.messes.map((messe: any) => (
+                <div
+                  key={messe.id}
+                  className="flex justify-between items-center text-sm bg-black/20 rounded-lg px-3 py-2"
+                >
+                  <div>
                     <div>
-                      <div>
-                        <span className="font-medium">{messe.jour}</span>{" "}
-                        – {messe.heure}{" "}
-                        <span className="text-[10px] uppercase tracking-wide text-orlit ml-1">
-                          {messe.categorie === "Dominicale"
-                            ? "Dominicale"
-                            : "Semaine"}
-                        </span>
-                      </div>
-                      {messe.remarque && (
-                        <div className="text-xs text-gray-400">
-                          {messe.remarque}
-                        </div>
-                      )}
+                      <span className="font-medium">{messe.jour}</span> –{" "}
+                      {messe.heure}{" "}
+                      <span className="text-[10px] uppercase tracking-wide text-orlit ml-1">
+                        {messe.categorie}
+                      </span>
                     </div>
 
-                    <form
-                      action="/api/messes/delete"
-                      method="POST"
-                    >
-                      <input type="hidden" name="egliseId" value={eglise.id} />
-                      <input type="hidden" name="messeId" value={messe.id} />
-                      <button
-                        type="submit"
-                        className="text-red-400 hover:underline text-xs"
-                      >
-                        Supprimer
-                      </button>
-                    </form>
+                    {messe.remarque && (
+                      <div className="text-xs text-gray-400">
+                        {messe.remarque}
+                      </div>
+                    )}
                   </div>
-                ))}
+
+                  <form action="/api/messes/delete" method="POST">
+                    <input type="hidden" name="messeId" value={messe.id} />
+                    <button
+                      type="submit"
+                      className="text-red-400 hover:underline text-xs"
+                    >
+                      Supprimer
+                    </button>
+                  </form>
+                </div>
+              ))}
             </div>
 
-            {/* Formulaire pour ajouter une messe */}
+            {/* Ajouter une messe */}
             <form
               action="/api/messes/add"
               method="POST"
@@ -113,20 +117,19 @@ export default function AdminMessesPage() {
               <div>
                 <label className="block text-[11px] mb-1">Catégorie</label>
                 <select
-                name="categorie"
-               className={inputClass}
-              defaultValue="Dominicale"
-               >
-                <option value="Dominicale">Dominicale</option>
-                <option value="Semaine">Semaine</option>
-                <option value="Fête liturgique">Fête liturgique</option>
-                <option value="Baptême">Baptême</option>
-                <option value="Funérailles">Funérailles</option>
-                <option value="Messe spéciale">Messe spéciale</option>
-                <option value="Adoration">Adoration</option>
-                <option value="Autre">Autre</option>
-                 </select>
-
+                  name="categorie"
+                  className={inputClass}
+                  defaultValue="Dominicale"
+                >
+                  <option value="Dominicale">Dominicale</option>
+                  <option value="Semaine">Semaine</option>
+                  <option value="Fête liturgique">Fête liturgique</option>
+                  <option value="Baptême">Baptême</option>
+                  <option value="Funérailles">Funérailles</option>
+                  <option value="Messe spéciale">Messe spéciale</option>
+                  <option value="Adoration">Adoration</option>
+                  <option value="Autre">Autre</option>
+                </select>
               </div>
 
               <div className="md:col-span-2">

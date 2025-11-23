@@ -1,13 +1,38 @@
-import fs from "fs";
-import path from "path";
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { sacrements } from "@/lib/schema.sacrements";
+import { eq } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  try {
+    const body = await req.json(); 
+    // body est de type Record<string, any>
 
-  const filePath = path.join(process.cwd(), "lib", "sacrements-contacts.json");
+    const entries = Object.entries(body);
 
-  fs.writeFileSync(filePath, JSON.stringify(body, null, 2));
+    for (const [id, rawInfo] of entries) {
+      // 💡 Cast explicite pour TypeScript
+      const info = rawInfo as {
+        personne?: string;
+        telephone?: string;
+        email?: string;
+      };
 
-  return NextResponse.json({ success: true });
+      await db
+        .update(sacrements)
+        .set({
+          personne: info.personne ?? "",
+          telephone: info.telephone ?? "",
+          email: info.email ?? "",
+        })
+        .where(eq(sacrements.id, id));
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Erreur UPDATE sacrements:", err);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
 }

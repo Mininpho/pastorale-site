@@ -1,30 +1,20 @@
+// app/api/documents/delete/route.ts
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { documents } from "@/lib/schema.documents";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { id } = body;
+    const { id } = await req.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID manquant" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ID manquant" }, { status: 400 });
     }
 
-    const jsonPath = path.join(process.cwd(), "lib", "documents.json");
-
-    const docs = fs.existsSync(jsonPath)
-      ? JSON.parse(fs.readFileSync(jsonPath, "utf8"))
-      : [];
-
-    const newDocs = docs.filter((d: any) => d.id !== id);
-
-    fs.writeFileSync(jsonPath, JSON.stringify(newDocs, null, 2));
+    await db.delete(documents).where(eq(documents.id, id));
 
     return NextResponse.json({ ok: true });
   } catch (err) {

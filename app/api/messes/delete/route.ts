@@ -1,35 +1,23 @@
 // app/api/messes/delete/route.ts
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { messes } from "@/lib/schema.messes";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
-  const formData = await req.formData();
+  try {
+    const formData = await req.formData();
+    const messeId = formData.get("messeId")?.toString();
 
-  const egliseId = formData.get("egliseId")?.toString() ?? "";
-  const messeId = formData.get("messeId")?.toString() ?? "";
+    if (!messeId) {
+      return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+    }
 
-  const filePath = path.join(process.cwd(), "lib", "horaires.json");
+    await db.delete(messes).where(eq(messes.id, messeId));
 
-  const data = fs.existsSync(filePath)
-    ? JSON.parse(fs.readFileSync(filePath, "utf8"))
-    : [];
-
-  const egliseIndex = data.findIndex((e: any) => e.id === egliseId);
-
-  if (egliseIndex === -1) {
-    return new NextResponse("Église introuvable", { status: 400 });
+    return NextResponse.redirect(new URL("/admin/messes", req.url));
+  } catch (err) {
+    console.error("ERREUR SUPPRESSION MESSE :", err);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
-
-  const eglise = data[egliseIndex];
-
-  eglise.messes = (eglise.messes || []).filter(
-    (m: any) => m.id !== messeId
-  );
-
-  data[egliseIndex] = eglise;
-
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-
-  return NextResponse.redirect(new URL("/admin/messes", req.url));
 }

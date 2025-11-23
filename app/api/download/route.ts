@@ -7,10 +7,13 @@ export async function GET(req: Request) {
     const filename = searchParams.get("filename") || "document.pdf";
 
     if (!fileUrl) {
-      return NextResponse.json({ error: "URL manquante" }, { status: 400 });
+      return NextResponse.json(
+        { error: "URL manquante" },
+        { status: 400 }
+      );
     }
 
-    // Télécharger le fichier depuis Cloudinary
+    // Téléchargement Cloudinary
     const fileRes = await fetch(fileUrl);
 
     if (!fileRes.ok) {
@@ -20,17 +23,19 @@ export async function GET(req: Request) {
       );
     }
 
-    const buffer = Buffer.from(await fileRes.arrayBuffer());
+    const arrayBuffer = await fileRes.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    return new NextResponse(buffer, {
+    return new Response(buffer, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": buffer.length.toString(),
       },
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Erreur DOWNLOAD:", err);
     return NextResponse.json(
       { error: "Erreur serveur" },
       { status: 500 }

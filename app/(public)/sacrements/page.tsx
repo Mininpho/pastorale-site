@@ -1,18 +1,23 @@
 // app/(public)/sacrements/page.tsx
-import fs from "fs";
-import path from "path";
 import Image from "next/image";
+import { db } from "@/lib/db";
+import { sacrements } from "@/lib/schema.sacrements"; // <-- ON UTILISE LA TABLE SQL
 
 export const dynamic = "force-dynamic";
 
-export default function SacrementsPage() {
+export default async function SacrementsPage() {
 
-  // Charger contacts dynamiques
-  const filePath = path.join(process.cwd(), "lib", "sacrements-contacts.json");
-  const contacts = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  // 📌 Lecture SQL : tous les contacts des sacrements
+  const contacts = await db.select().from(sacrements);
 
-  // Informations statiques + images (ne changent pas)
-  const sacrements = [
+  // 📌 Transformer le tableau SQL → objet { bapteme: {...}, mariage: {...} }
+  const contactsMap: Record<string, any> = {};
+  contacts.forEach((c) => {
+    contactsMap[c.id] = c;
+  });
+
+  // 📌 Informations statiques (images + descriptions)
+  const items = [
     {
       id: "bapteme",
       titre: "Baptême",
@@ -82,54 +87,52 @@ export default function SacrementsPage() {
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sacrements.map((s) => (
-          <article
-            key={s.id}
-            className="bg-[#fdfbf7] rounded-2xl border border-marial/20 shadow-lg shadow-marial/10 p-5 flex flex-col transition-all duration-200 hover:shadow-xl hover:scale-[1.01]"
-          >
-            <div className="rounded-2xl overflow-hidden mb-4 h-36 relative bg-white shadow-sm">
-              <Image
-                src={s.image}
-                alt={s.titre}
-                fill
-                className="object-contain p-3"
-              />
-            </div>
+        {items.map((s) => {
+          const c = contactsMap[s.id];
 
-            <h2 className="text-lg font-semibold text-nuit mb-1">
-              {s.titre}
-            </h2>
+          return (
+            <article
+              key={s.id}
+              className="bg-[#fdfbf7] rounded-2xl border border-marial/20 shadow-lg shadow-marial/10 p-5 flex flex-col transition-all duration-200 hover:shadow-xl hover:scale-[1.01]"
+            >
+              <div className="rounded-2xl overflow-hidden mb-4 h-36 relative bg-white shadow-sm">
+                <Image
+                  src={s.image}
+                  alt={s.titre}
+                  fill
+                  className="object-contain p-3"
+                />
+              </div>
 
-            <p className="text-sm text-nuit/70 mb-3">{s.description}</p>
+              <h2 className="text-lg font-semibold text-nuit mb-1">
+                {s.titre}
+              </h2>
 
-            {/* CONTACT DYNAMIQUE */}
-            <div className="mt-auto text-sm space-y-1">
-              {contacts[s.id] ? (
-                <>
-                  {contacts[s.id].personne && (
-                    <p className="text-nuit/80">
-                      <strong>Contact :</strong> {contacts[s.id].personne}
-                    </p>
-                  )}
-                  {contacts[s.id].telephone && (
-                    <p className="text-nuit/80">
-                      {contacts[s.id].telephone}
-                    </p>
-                  )}
-                  {contacts[s.id].email && (
-                    <p className="text-nuit/80">
-                      {contacts[s.id].email}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-nuit/60 text-sm">
-                  Aucun contact renseigné.
-                </p>
-              )}
-            </div>
-          </article>
-        ))}
+              <p className="text-sm text-nuit/70 mb-3">{s.description}</p>
+
+              {/* CONTACT DYNAMIQUE */}
+              <div className="mt-auto text-sm space-y-1">
+                {c ? (
+                  <>
+                    {c.personne && (
+                      <p className="text-nuit/80">
+                        <strong>Contact :</strong> {c.personne}
+                      </p>
+                    )}
+                    {c.telephone && (
+                      <p className="text-nuit/80">{c.telephone}</p>
+                    )}
+                    {c.email && (
+                      <p className="text-nuit/80">{c.email}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-nuit/60 text-sm">Aucun contact renseigné.</p>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </section>
     </div>
   );

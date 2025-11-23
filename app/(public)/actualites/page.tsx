@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { actualites } from "@/lib/schema.actualites";
+import { desc, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -25,10 +26,13 @@ export default async function ActualitesPage({
 }) {
   const activeCat = searchParams.cat || "Toutes";
 
-  // Lecture BDD
-  let data = await db.select().from(actualites);
+  // 🔥 TRI SQL FORCÉ — le plus fiable possible
+  const data = await db
+    .select()
+    .from(actualites)
+    .orderBy(desc(sql`CAST(${actualites.date} AS TIMESTAMPTZ)`));
 
-  // Filtrage si catégorie
+  // Filtrage par catégorie
   const filtresActu =
     activeCat === "Toutes"
       ? data
@@ -106,19 +110,18 @@ export default async function ActualitesPage({
 
               <div className="p-6 flex flex-col">
 
-                {/* Badge de catégorie */}
+                {/* Badge */}
                 {actu.categorie && (
                   <span
-                    className={`inline-block px-3 py-1 text-xs font-semibold border rounded-full mb-3
-                      ${badgeStyles[actu.categorie] || "bg-gray-200 text-gray-700"}`}
+                    className={`inline-block px-3 py-1 text-xs font-semibold border rounded-full mb-3 ${
+                      badgeStyles[actu.categorie] || "bg-gray-200 text-gray-700"
+                    }`}
                   >
-                    {
-                      categories.find((c) => c.value === actu.categorie)
-                        ?.label
-                    }
+                    {categories.find((c) => c.value === actu.categorie)?.label}
                   </span>
                 )}
 
+                {/* DATE */}
                 <div className="text-xs text-gray-500 mb-1">
                   {new Date(actu.date).toLocaleDateString("fr-FR", {
                     day: "numeric",
@@ -127,14 +130,13 @@ export default async function ActualitesPage({
                   })}
                 </div>
 
-                <h2 className="text-lg font-semibold text-nuit mb-2">
-                  {actu.titre}
-                </h2>
+                {/* TITRE */}
+                <h2 className="text-lg font-semibold text-nuit mb-2">{actu.titre}</h2>
 
-                <p className="text-sm text-nuit/70 mb-4">
-                  {actu.extrait}
-                </p>
+                {/* EXTRAIT */}
+                <p className="text-sm text-nuit/70 mb-4">{actu.extrait}</p>
 
+                {/* LIRE LA SUITE */}
                 <a
                   href={`/actualites/${actu.id}`}
                   className="inline-flex items-center gap-1 text-sm font-semibold 

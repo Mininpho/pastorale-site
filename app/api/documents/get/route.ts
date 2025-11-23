@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { documents } from "@/lib/schema.documents";
+import { desc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const filePath = path.join(process.cwd(), "lib", "documents.json");
+  try {
+    // Lecture SQL triée par date DESC (plus récent en premier)
+    const data = await db
+      .select()
+      .from(documents)
+      .orderBy(desc(documents.date));
 
-  const docs = fs.existsSync(filePath)
-    ? JSON.parse(fs.readFileSync(filePath, "utf8"))
-    : [];
-
-  return NextResponse.json(docs);
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error("ERREUR GET DOCUMENTS:", err);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
 }

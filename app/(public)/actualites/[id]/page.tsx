@@ -43,10 +43,10 @@ export default async function ActualiteDetailPage({ params }: Props) {
           </h1>
 
           <p className="text-sm text-nuit/60">
-            {new Date(actu.date).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
+            {new Date(actu.date + "Z").toLocaleDateString("fr-FR", {
+             day: "numeric",
+             month: "long",
+             year: "numeric",
             })}
           </p>
         </header>

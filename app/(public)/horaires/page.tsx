@@ -1,17 +1,25 @@
 // app/(public)/horaires/page.tsx
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { eglises, messes } from "@/lib/schema.messes";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-export default function HorairesPage() {
-  const filePath = path.join(process.cwd(), "lib", "horaires.json");
+export default async function HorairesPage() {
+  // 1. Récupérer toutes les églises dans l'ordre original
+  const eglisesList = await db
+    .select()
+    .from(eglises)
+    .orderBy(eglises.id);
 
-  let eglises: any[] = [];
+  // 2. Récupérer toutes les messes
+  const messesList = await db.select().from(messes);
 
-  if (fs.existsSync(filePath)) {
-    eglises = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  }
+  // 3. Reconstituer la structure église → messes[]
+  const eglisesCompletes = eglisesList.map((e) => ({
+    ...e,
+    messes: messesList.filter((m) => m.egliseId === e.id),
+  }));
 
   function formatCategorie(categorie: string) {
     switch (categorie) {
@@ -23,8 +31,9 @@ export default function HorairesPage() {
         return "Baptême";
       case "Funerailles":
         return "Funérailles";
-      case "Fete":
-        return "Fête";
+      case "Fete liturgique":
+      case "Fête liturgique":
+        return "Fête liturgique";
       default:
         return categorie;
     }
@@ -32,7 +41,6 @@ export default function HorairesPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-
       {/* HEADER */}
       <header className="mb-10 text-center">
         <p className="text-[11px] tracking-[0.3em] uppercase text-marial mb-2">
@@ -49,9 +57,9 @@ export default function HorairesPage() {
         </p>
       </header>
 
-      {/* GRID DES EGLISES */}
+      {/* GRID DES ÉGLISES */}
       <section className="grid md:grid-cols-2 gap-8">
-        {eglises.map((eglise) => (
+        {eglisesCompletes.map((eglise) => (
           <article
             key={eglise.id}
             className="bg-[#fdfbf7] rounded-2xl border border-marial/20 shadow-lg shadow-marial/10 p-6 flex flex-col"
@@ -81,7 +89,7 @@ export default function HorairesPage() {
             </header>
 
             {/* MESSES */}
-            {(!eglise.messes || eglise.messes.length === 0) ? (
+            {eglise.messes.length === 0 ? (
               <p className="text-xs text-nuit/60">
                 Aucun horaire régulier n’est renseigné pour le moment.
               </p>
@@ -89,7 +97,6 @@ export default function HorairesPage() {
               <ul className="space-y-3 text-sm mb-4">
                 {eglise.messes.map((messe: any) => (
                   <li key={messe.id} className="flex flex-col text-nuit">
-
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{messe.jour}</span>
                       <span>– {messe.heure}</span>
@@ -118,8 +125,19 @@ export default function HorairesPage() {
                 className="inline-flex items-center gap-2 text-sm bg-marial text-white px-4 py-2 rounded-lg font-medium shadow-md hover:bg-marialDark transition w-fit"
               >
                 Voir sur Google Maps
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </a>
             )}

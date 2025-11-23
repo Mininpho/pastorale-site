@@ -39,7 +39,7 @@ export default function AjouterDocumentPage() {
         url = uploaded.url;
       }
 
-      // 2️⃣ Enregistrer dans le JSON
+      // 2️⃣ Enregistrer dans la base PostgreSQL
       const save = await fetch("/api/documents/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,7 +51,7 @@ export default function AjouterDocumentPage() {
         }),
       });
 
-      if (!save.ok) throw new Error("Erreur enregistrement JSON");
+      if (!save.ok) throw new Error("Erreur enregistrement DB");
 
       router.push("/admin/documents");
     } catch (err: any) {

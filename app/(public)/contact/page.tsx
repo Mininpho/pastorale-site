@@ -1,21 +1,29 @@
-// app/(public)/contact/page.tsx
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import {
+  contactGeneral,
+  pretres,
+  animatrice,
+  secretariat,
+  secretariatHoraires,
+  funerailles,
+} from "@/lib/schema.contact";
 
 export const dynamic = "force-dynamic";
 
-export default function ContactPage() {
-  const filePath = path.join(process.cwd(), "lib", "contact.json");
-  const contact = JSON.parse(fs.readFileSync(filePath, "utf8"));
+export default async function ContactPage() {
+  // --- LECTURE SQL ---
+  const general = (await db.select().from(contactGeneral))[0];
+  const listPretres = await db.select().from(pretres);
+  const anim = (await db.select().from(animatrice))[0];
+  const sec = (await db.select().from(secretariat))[0];
+  const horaires = await db.select().from(secretariatHoraires);
+  const fune = (await db.select().from(funerailles))[0];
 
-  // ---- COMPONENTS ----------------------------------------------------------
-
-  // Generic card container
+  // --- COMPOSANTS INTERNES ---
   const Card = ({ title, children }: any) => (
     <section className="bg-[#fdfbf7] border border-marial/20 rounded-2xl p-8 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="flex items-center gap-2 mb-5">
         <span className="text-marial/80">
-          {/* tiny minimalistic cross icon */}
           <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none">
             <path d="M12 3v18M5 12h14" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
@@ -26,7 +34,6 @@ export default function ContactPage() {
     </section>
   );
 
-  // Single line with icon
   const Line = ({ icon, label, value }: any) =>
     value ? (
       <p className="text-[15px] text-nuit flex items-center gap-2">
@@ -34,8 +41,6 @@ export default function ContactPage() {
         <strong className="mr-1">{label} :</strong> {value}
       </p>
     ) : null;
-
-  // ---- ICONS --------------------------------------------------------------
 
   const IconMail = (
     <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor">
@@ -61,13 +66,10 @@ export default function ContactPage() {
     </svg>
   );
 
-  // ---- PAGE ---------------------------------------------------------------
-
+  // --- PAGE ---
   return (
     <div className="min-h-screen bg-marialLight/70 py-14">
       <div className="max-w-5xl mx-auto px-4 space-y-12">
-
-        {/* HEADER */}
         <header className="text-center mb-8">
           <p className="text-[11px] tracking-[0.3em] uppercase text-marial mb-2">
             Contact
@@ -76,29 +78,26 @@ export default function ContactPage() {
             Nous contacter & permanences
           </h1>
           <p className="text-[15px] text-gray-700 max-w-xl mx-auto leading-relaxed">
-            Retrouvez ici toutes les coordonnées officielles de l’unité pastorale,
-            mises à jour directement par l’équipe.
+            Retrouvez ici toutes les coordonnées officielles de l’unité pastorale.
           </p>
         </header>
 
-        {/* CONTACT GENERAL */}
+        {/* CONTACT GÉNÉRAL */}
         <Card title="Contact général">
-          <Line icon={IconMail} label="Email" value={contact.general.email} />
-          <Line icon={IconHome} label="Adresse" value={contact.general.adresse} />
-          <Line icon={IconPhone} label="Tél" value={contact.general.telephone} />
-
+          <Line icon={IconMail} label="Email" value={general.email} />
+          <Line icon={IconHome} label="Adresse" value={general.adresse} />
+          <Line icon={IconPhone} label="Tél" value={general.telephone} />
           <p className="text-[15px] text-nuit mt-3">
-            <strong className="text-nuit/90">Responsable :</strong>{" "}
-            {contact.general.responsable}
+            <strong className="text-nuit/90">Responsable :</strong> {general.responsable}
           </p>
         </Card>
 
-        {/* PRÊTRES */}
+        {/* PRETRES */}
         <Card title="Prêtres de l’unité pastorale">
           <div className="space-y-4 text-[15px] text-nuit">
-            {contact.pretres.map((p: any, i: number) => (
+            {listPretres.map((p) => (
               <div
-                key={i}
+                key={p.id}
                 className="p-4 bg-white/70 rounded-xl border border-marial/20 shadow-sm hover:shadow-md transition-all"
               >
                 <p className="font-semibold text-nuit mb-1">{p.nom}</p>
@@ -112,24 +111,22 @@ export default function ContactPage() {
 
         {/* ANIMATRICE */}
         <Card title="Animatrice en pastorale">
-          <p className="text-[15px] font-semibold text-nuit">
-            {contact.animatrice.nom}
-          </p>
-          <Line icon={IconPhone} label="GSM" value={contact.animatrice.telephone} />
-          <Line icon={IconMail} label="Email" value={contact.animatrice.email} />
+          <p className="text-[15px] font-semibold text-nuit">{anim.nom}</p>
+          <Line icon={IconPhone} label="GSM" value={anim.telephone} />
+          <Line icon={IconMail} label="Email" value={anim.email} />
         </Card>
 
         {/* SECRETARIAT */}
         <Card title="Permanences & secrétariat">
-          <Line icon={IconHome} label="Adresse" value={contact.secretariat.adresse} />
-          <Line icon={IconPhone} label="Tél" value={contact.secretariat.telephone} />
-          <Line icon={IconMail} label="Email" value={contact.secretariat.email} />
+          <Line icon={IconHome} label="Adresse" value={sec.adresse} />
+          <Line icon={IconPhone} label="Tél" value={sec.telephone} />
+          <Line icon={IconMail} label="Email" value={sec.email} />
 
           <div className="mt-5">
             <p className="text-[15px] font-semibold text-nuit mb-2">Permanences :</p>
-            {contact.secretariat.horaires.map((h: string, index: number) => (
-              <p key={index} className="text-sm text-gray-700">
-                • {h}
+            {horaires.map((h) => (
+              <p key={h.id} className="text-sm text-gray-700">
+                • {h.ligne}
               </p>
             ))}
           </div>
@@ -137,9 +134,8 @@ export default function ContactPage() {
 
         {/* FUNÉRAILLES */}
         <Card title="Contact funérailles">
-          <Line icon={IconPhone} label="GSM" value={contact.funerailles.telephone} />
+          <Line icon={IconPhone} label="GSM" value={fune.telephone} />
         </Card>
-
       </div>
     </div>
   );

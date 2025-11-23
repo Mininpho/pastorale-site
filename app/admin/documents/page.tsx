@@ -8,8 +8,12 @@ export default function DocumentsAdminPage() {
   const [message, setMessage] = useState("");
 
   async function loadDocs() {
-    const res = await fetch("/api/documents/get");
+    const res = await fetch("/api/documents/get", { cache: "no-store" });
     const data = await res.json();
+
+    // tri du plus récent au plus ancien (au cas où ton API ne trie pas)
+    data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     setDocs(data);
     setLoading(false);
   }

@@ -5,6 +5,11 @@ export default defineConfig({
   schema: [
     "./lib/schema.actualites.ts",
     "./lib/schema.messes.ts",
+    "./lib/schema.documents.ts", 
+    "./lib/schema.actualites.ts",
+    "./lib/schema.contact.ts",
+    "./lib/schema.sacrements.ts",
+
   ],
   dialect: "postgresql",
   dbCredentials: {

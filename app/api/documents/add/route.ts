@@ -1,6 +1,8 @@
+// app/api/documents/add/route.ts
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { documents } from "@/lib/schema.documents";
+import { desc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,24 +18,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const newDoc = {
-      id: Date.now().toString(),
+    await db.insert(documents).values({
+      id: crypto.randomUUID(),
       titre,
-      description: description || "",
+      description: description ?? "",
       categorie,
       url,
-      date: new Date().toISOString(),
-    };
-
-    const jsonPath = path.join(process.cwd(), "lib", "documents.json");
-
-    const data = fs.existsSync(jsonPath)
-      ? JSON.parse(fs.readFileSync(jsonPath, "utf8"))
-      : [];
-
-    data.unshift(newDoc);
-
-    fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+      date: new Date()
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
