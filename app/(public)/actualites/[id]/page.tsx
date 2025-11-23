@@ -1,5 +1,6 @@
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { actualites } from "@/lib/schema.actualites";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -7,16 +8,14 @@ interface Props {
   params: { id: string };
 }
 
-export default function ActualiteDetailPage({ params }: Props) {
-  const filePath = path.join(process.cwd(), "lib", "actualites.json");
+export default async function ActualiteDetailPage({ params }: Props) {
+  // Lecture dans PostgreSQL
+  const rows = await db
+    .select()
+    .from(actualites)
+    .where(eq(actualites.id, params.id));
 
-  let actualites: any[] = [];
-
-  if (fs.existsSync(filePath)) {
-    actualites = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  }
-
-  const actu = actualites.find((a) => a.id === params.id);
+  const actu = rows[0];
 
   if (!actu) {
     return (
@@ -52,17 +51,17 @@ export default function ActualiteDetailPage({ params }: Props) {
           </p>
         </header>
 
-        {/* IMAGE HÉRO */}
-      {/* IMAGE */}
-{actu.image && (
-  <div className="mb-8 overflow-hidden rounded-2xl shadow-xl shadow-marial/20">
-    <img
-      src={actu.image}
-      alt={actu.titre}
-      className="w-full h-auto object-contain"
-    />
-  </div>
-)}
+        {/* IMAGE */}
+        {actu.image && (
+          <div className="mb-8 overflow-hidden rounded-2xl shadow-xl shadow-marial/20">
+            <img
+              src={actu.image}
+              alt={actu.titre}
+              className="w-full h-auto object-contain"
+            />
+          </div>
+        )}
+
         {/* CONTENU */}
         <article className="bg-[#fdfbf7] border border-marial/20 rounded-2xl p-8 shadow-lg shadow-marial/10">
           <div className="prose prose-invert prose-sm md:prose-base text-nuit max-w-none whitespace-pre-line leading-relaxed">

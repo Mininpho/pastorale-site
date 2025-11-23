@@ -1,20 +1,28 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { actualites } from "@/lib/schema.actualites";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
-  const formData = await req.formData();
-  const id = formData.get("id");
+  try {
+    const formData = await req.formData();
+    const id = formData.get("id") as string;
 
-  const filePath = path.join(process.cwd(), "lib", "actualites.json");
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID manquant" },
+        { status: 400 }
+      );
+    }
 
-  const data = fs.existsSync(filePath)
-    ? JSON.parse(fs.readFileSync(filePath, "utf8"))
-    : [];
+    // Suppression dans PostgreSQL
+    await db.delete(actualites).where(eq(actualites.id, id));
 
-  const newData = data.filter((a: any) => a.id !== id);
+    // Redirection vers l'admin
+    return NextResponse.redirect(new URL("/admin/actualites", req.url));
 
-  fs.writeFileSync(filePath, JSON.stringify(newData, null, 2));
-
-  return NextResponse.redirect(new URL("/admin/actualites", req.url));
+  } catch (error) {
+    console.error("Erreur suppression actualité :", error);
+    return new NextResponse("Erreur serveur", { status: 500 });
+  }
 }

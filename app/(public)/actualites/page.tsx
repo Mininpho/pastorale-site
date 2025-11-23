@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
+import { actualites } from "@/lib/schema.actualites";
 
 export const dynamic = "force-dynamic";
 
@@ -18,24 +18,21 @@ const badgeStyles: Record<string, string> = {
   liturgie: "bg-red-100 text-red-800 border-red-200",
 };
 
-export default function ActualitesPage({
+export default async function ActualitesPage({
   searchParams,
 }: {
   searchParams: { cat?: string };
 }) {
-  const filePath = path.join(process.cwd(), "lib", "actualites.json");
-
-  const actualites = fs.existsSync(filePath)
-    ? JSON.parse(fs.readFileSync(filePath, "utf8"))
-    : [];
-
   const activeCat = searchParams.cat || "Toutes";
 
-  // Filtrage des actualités
+  // Lecture BDD
+  let data = await db.select().from(actualites);
+
+  // Filtrage si catégorie
   const filtresActu =
     activeCat === "Toutes"
-      ? actualites
-      : actualites.filter((a: any) => a.categorie === activeCat);
+      ? data
+      : data.filter((a) => a.categorie === activeCat);
 
   return (
     <div className="min-h-screen py-12 bg-marialLight/50">
