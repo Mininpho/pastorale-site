@@ -1,23 +1,24 @@
 // app/api/login/route.ts
 import { NextResponse } from "next/server";
-import { authenticate } from "../../../lib/auth";
+import { authenticate } from "@/lib/auth";
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();
 
+  // Vérification via ton auth.ts
   if (authenticate(email, password)) {
-    // On crée une session simplifiée
     const response = NextResponse.json({ ok: true });
 
-    response.cookies.set({
-      name: "admin-session",
-      value: "connecte",
+    // Nouveau cookie cohérent avec admin/layout.tsx
+    response.cookies.set("admin_auth", "true", {
       httpOnly: true,
+      secure: true,
       path: "/",
+      sameSite: "strict",
     });
 
     return response;
   }
 
-  return new NextResponse("Unauthorized", { status: 401 });
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }

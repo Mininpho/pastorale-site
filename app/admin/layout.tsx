@@ -3,11 +3,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  // Vérification correcte de la session
+  // Vérification correcte du cookie de session admin
   const session = cookies().get("admin_auth");
 
+  // Si pas connecté → redirection vers la vraie page login
   if (!session || session.value !== "true") {
-    redirect("/admin/login");
+    return redirect("/login");
   }
 
   return (
@@ -43,7 +44,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </a>
 
           <a href="/admin/documents" className="block px-3 py-2 rounded-lg hover:bg-white/10">
-            Gerer les documents
+            Gérer les documents
           </a>
 
           <a href="/admin/contact" className="block px-3 py-2 rounded-lg hover:bg-white/10">
