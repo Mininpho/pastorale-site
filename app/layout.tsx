@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "Unité pastorale Gilly - Ransart",
+  title: "Unité pastorale Gilly - Ransart - Hamendes",
   description:
     "Horaires des messes, actualités, sacrements et informations de l'unité pastorale.",
 };

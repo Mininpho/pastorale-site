@@ -84,10 +84,9 @@ export default async function DocumentsPage() {
                             Voir
                           </a>
 
-                          {/* TÉLÉCHARGER */}
+                          {/* TÉLÉCHARGER (via API) */}
                           <a
-                            href={doc.url}
-                            download
+                            href={`/api/download?url=${encodeURIComponent(doc.url)}&filename=${encodeURIComponent(doc.titre + ".pdf")}`}
                             className="px-4 py-1.5 rounded-lg bg-marial/10 border border-marial/40 text-marial text-sm font-semibold hover:bg-marial/20 transition"
                           >
                             Télécharger

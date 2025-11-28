@@ -49,73 +49,125 @@ export default function AdminSacrementsPage() {
   }
 
   return (
-    <div className="p-10 max-w-3xl">
-      <h1 className="text-2xl font-semibold mb-6">Contacts des sacrements</h1>
+    <div className="p-10 max-w-4xl">
+      <h1 className="text-2xl font-semibold mb-8">Gestion des sacrements</h1>
 
-      <div className="space-y-8">
-        {Object.keys(data).map((key) => (
-          <div
-            key={key}
-            className="bg-black/20 p-6 rounded-xl border border-orlit/20"
-          >
-            <h2 className="text-xl font-semibold mb-4 capitalize">
-              {key.replace("-", " ")}
-            </h2>
+      <div className="space-y-10">
+        {Object.keys(data).map((key) => {
+          const s = data[key];
+          return (
+            <div key={key} className="bg-black/20 p-6 rounded-xl border border-orlit/20">
+              <h2 className="text-xl font-semibold mb-5 capitalize">
+                {key.replace("-", " ")}
+              </h2>
 
-            {/* PERSONNE */}
-            <label className="text-sm text-gray-300">Personne</label>
-            <input
-              className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4"
-              value={data[key].personne || ""}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  [key]: { ...data[key], personne: e.target.value },
-                })
-              }
-            />
+              {/* TITRE */}
+              <label className="text-sm text-gray-300">Titre affiché</label>
+              <input
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4"
+                value={s.titre || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, titre: e.target.value },
+                  })
+                }
+              />
 
-            {/* TELEPHONE */}
-            <label className="text-sm text-gray-300">Téléphone</label>
-            <input
-              className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4"
-              value={data[key].telephone || ""}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  [key]: { ...data[key], telephone: e.target.value },
-                })
-              }
-            />
+              {/* DESCRIPTION COURTE */}
+              <label className="text-sm text-gray-300">Description courte</label>
+              <textarea
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4 h-20"
+                value={s.description || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, description: e.target.value },
+                  })
+                }
+              />
 
-            {/* EMAIL */}
-            <label className="text-sm text-gray-300">Email</label>
-            <input
-              className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond"
-              value={data[key].email || ""}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  [key]: { ...data[key], email: e.target.value },
-                })
-              }
-            />
-          </div>
-        ))}
+              {/* TEXTE BIBLIQUE */}
+              <label className="text-sm text-gray-300">Texte biblique (accordion)</label>
+              <textarea
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4 h-28 whitespace-pre-line"
+                value={s.texteBiblique || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, texteBiblique: e.target.value },
+                  })
+                }
+              />
+
+              {/* REFERENCE CEC */}
+              <label className="text-sm text-gray-300">Référence CEC</label>
+              <input
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4"
+                value={s.referenceCEC || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, referenceCEC: e.target.value },
+                  })
+                }
+              />
+
+              <hr className="border-orlit/20 my-4" />
+
+              {/* PERSONNE */}
+              <label className="text-sm text-gray-300">Contact</label>
+              <input
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4"
+                value={s.personne || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, personne: e.target.value },
+                  })
+                }
+              />
+
+              {/* TELEPHONE */}
+              <label className="text-sm text-gray-300">Téléphone</label>
+              <input
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond mb-4"
+                value={s.telephone || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, telephone: e.target.value },
+                  })
+                }
+              />
+
+              {/* EMAIL */}
+              <label className="text-sm text-gray-300">Email</label>
+              <input
+                className="w-full bg-black/40 border border-orlit/30 rounded-lg p-2 text-fond"
+                value={s.email || ""}
+                onChange={(e) =>
+                  setData({
+                    ...data,
+                    [key]: { ...s, email: e.target.value },
+                  })
+                }
+              />
+            </div>
+          );
+        })}
       </div>
 
       <button
         onClick={handleSave}
-        className="mt-8 bg-orlit text-nuit px-5 py-2 rounded-lg font-semibold shadow hover:bg-orlit/80 transition"
+        className="mt-10 bg-orlit text-nuit px-6 py-2 rounded-lg font-semibold shadow hover:bg-orlit/80 transition"
       >
         Sauvegarder
       </button>
 
       {status === "saving" && <p className="mt-3 text-blue-400">Sauvegarde…</p>}
       {status === "done" && <p className="mt-3 text-green-400">Enregistré !</p>}
-      {status === "error" && (
-        <p className="mt-3 text-red-400">Erreur lors de l’enregistrement</p>
-      )}
+      {status === "error" && <p className="mt-3 text-red-400">Erreur lors de l’enregistrement</p>}
     </div>
   );
 }

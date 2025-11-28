@@ -8,7 +8,7 @@ export default function Header() {
 
         {/* Logo / Nom du site */}
         <Link href="/" className="text-lg font-semibold">
-          UP Sainte-Barbe & Saint-Martin
+          UP Gilly – Ransart – Hamendes
         </Link>
 
         {/* Menu */}

@@ -68,7 +68,7 @@ export default async function HomePage() {
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-nuit mb-4">
-            Unité pastorale Gilly – Ransart
+            Unité pastorale Gilly – Ransart – Hamendes
           </h1>
 
           <p className="text-gray-700 max-w-xl mx-auto mb-8 text-sm md:text-base">

@@ -1,72 +1,29 @@
 // app/(public)/sacrements/page.tsx
-import Image from "next/image";
 import { db } from "@/lib/db";
-import { sacrements } from "@/lib/schema.sacrements"; // <-- ON UTILISE LA TABLE SQL
+import { sacrements } from "@/lib/schema.sacrements";
+import SacrementCard from "./SacrementCard";
 
 export const dynamic = "force-dynamic";
 
 export default async function SacrementsPage() {
+  // 📌 Lecture SQL complète (titre, description, texte biblique, CEC, contacts)
+  const sacrementsDB = await db.select().from(sacrements);
 
-  // 📌 Lecture SQL : tous les contacts des sacrements
-  const contacts = await db.select().from(sacrements);
-
-  // 📌 Transformer le tableau SQL → objet { bapteme: {...}, mariage: {...} }
-  const contactsMap: Record<string, any> = {};
-  contacts.forEach((c) => {
-    contactsMap[c.id] = c;
+  // 📌 Transformer tableau SQL → { bapteme: {...}, mariage: {...} }
+  const sacMap: Record<string, any> = {};
+  sacrementsDB.forEach((s) => {
+    sacMap[s.id] = s;
   });
 
-  // 📌 Informations statiques (images + descriptions)
+  // 📌 Liste statique (UNIQUEMENT images + id)
   const items = [
-    {
-      id: "bapteme",
-      titre: "Baptême",
-      description:
-        "Le baptême est la première étape de la vie chrétienne. Il ouvre la porte à la vie nouvelle dans le Christ et fait entrer l’enfant ou l’adulte dans la grande famille de l’Église.",
-      image: "/images/sacrements/bapteme.png",
-    },
-    {
-      id: "premiere-communion",
-      titre: "Première Communion",
-      description:
-        "La première Eucharistie est célébrée après un parcours de catéchèse. Les familles sont invitées à inscrire leur enfant en début d’année pastorale.",
-      image: "/images/sacrements/premiere-communion.png",
-    },
-    {
-      id: "confirmation",
-      titre: "Confirmation",
-      description:
-        "La confirmation complète l’initiation chrétienne. Par la force de l’Esprit Saint, le jeune ou l’adulte devient témoin du Christ dans sa vie quotidienne.",
-      image: "/images/sacrements/confirmation.png",
-    },
-    {
-      id: "mariage",
-      titre: "Mariage",
-      description:
-        "Les couples sont invités à contacter l’Unité Pastorale au moins six mois avant la date souhaitée. Une préparation est organisée avec un prêtre et une équipe de couples.",
-      image: "/images/sacrements/mariage.png",
-    },
-    {
-      id: "reconciliation",
-      titre: "Réconciliation",
-      description:
-        "Le sacrement du pardon permet de recevoir la miséricorde du Seigneur et de repartir dans la paix. Il est proposé avant les grandes fêtes ou sur rendez-vous.",
-      image: "/images/sacrements/reconciliation.png",
-    },
-    {
-      id: "malades",
-      titre: "Onction des malades",
-      description:
-        "L’onction des malades apporte réconfort, paix et force aux personnes éprouvées par la maladie, la fragilité de l’âge ou une épreuve difficile.",
-      image: "/images/sacrements/onction-malades.png",
-    },
-    {
-      id: "funerailles",
-      titre: "Funérailles",
-      description:
-        "L’Église accompagne les familles dans l’espérance chrétienne lors du départ d’un proche.",
-      image: "/images/sacrements/funerailles.png",
-    },
+    { id: "bapteme", image: "/images/sacrements/bapteme.png" },
+    { id: "premiere-communion", image: "/images/sacrements/premiere-communion.png" },
+    { id: "confirmation", image: "/images/sacrements/confirmation.png" },
+    { id: "mariage", image: "/images/sacrements/mariage.png" },
+    { id: "reconciliation", image: "/images/sacrements/reconciliation.png" },
+    { id: "malades", image: "/images/sacrements/onction-malades.png" },
+    { id: "funerailles", image: "/images/sacrements/funerailles.png" },
   ];
 
   return (
@@ -87,50 +44,24 @@ export default async function SacrementsPage() {
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((s) => {
-          const c = contactsMap[s.id];
+        {items.map((item) => {
+          const data = sacMap[item.id]; // 🔥 Données SQL dynamiques
 
           return (
-            <article
-              key={s.id}
-              className="bg-[#fdfbf7] rounded-2xl border border-marial/20 shadow-lg shadow-marial/10 p-5 flex flex-col transition-all duration-200 hover:shadow-xl hover:scale-[1.01]"
-            >
-              <div className="rounded-2xl overflow-hidden mb-4 h-36 relative bg-white shadow-sm">
-                <Image
-                  src={s.image}
-                  alt={s.titre}
-                  fill
-                  className="object-contain p-3"
-                />
-              </div>
+            <SacrementCard
+              key={item.id}
+              item={{
+                id: item.id,
+                image: item.image,
 
-              <h2 className="text-lg font-semibold text-nuit mb-1">
-                {s.titre}
-              </h2>
-
-              <p className="text-sm text-nuit/70 mb-3">{s.description}</p>
-
-              {/* CONTACT DYNAMIQUE */}
-              <div className="mt-auto text-sm space-y-1">
-                {c ? (
-                  <>
-                    {c.personne && (
-                      <p className="text-nuit/80">
-                        <strong>Contact :</strong> {c.personne}
-                      </p>
-                    )}
-                    {c.telephone && (
-                      <p className="text-nuit/80">{c.telephone}</p>
-                    )}
-                    {c.email && (
-                      <p className="text-nuit/80">{c.email}</p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-nuit/60 text-sm">Aucun contact renseigné.</p>
-                )}
-              </div>
-            </article>
+                // 🔥 Les champs dynamiques viennent de la DB !
+                titre: data?.titre || "",
+                description: data?.description || "",
+                texteBiblique: data?.texteBiblique || "",
+                referenceCEC: data?.referenceCEC || "",
+              }}
+              contact={data}
+            />
           );
         })}
       </section>

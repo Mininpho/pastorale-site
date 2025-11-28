@@ -43,6 +43,13 @@
       "when": 1763872317516,
       "tag": "0005_dusty_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764291588977,
+      "tag": "0006_magenta_reptil",
+      "breakpoints": true
     }
   ]
 }

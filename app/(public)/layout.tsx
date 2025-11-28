@@ -18,17 +18,31 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           shadow-sm
         "
       >
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-1 flex items-center justify-between">
 
           {/* LOGO + TITRE */}
-          <a href="/" className="flex flex-col select-none">
-            <span className="text-[10px] tracking-[0.3em] uppercase text-marial/90 font-medium">
-              Unité pastorale
-            </span>
-            <span className="text-lg font-semibold text-nuit relative">
-              Gilly – Ransart
-              <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-marial/40 rounded-full"></span>
-            </span>
+          <a href="/" className="flex items-center gap-3 select-none">
+
+            {/* LOGO PNG */}
+            <img 
+                src="/logo-up.png"
+                alt="Logo Unité Pastorale Gilly – Ransart – Hamendes"
+                className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-sm"
+             />
+
+
+            {/* TITRE */}
+            <div className="flex flex-col leading-tight">
+              <span className="text-[10px] tracking-[0.3em] uppercase text-marial/90 font-medium">
+                Unité pastorale
+              </span>
+
+              <span className="text-lg font-semibold text-nuit relative">
+                Gilly – Ransart – Hamendes
+                <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-marial/40 rounded-full"></span>
+              </span>
+            </div>
+
           </a>
 
           {/* MENU DESKTOP */}
@@ -67,7 +81,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             aria-label="Menu mobile"
           >
             {!menuOpen ? (
-              // ICÔNE BURGER
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-6 h-6 text-nuit"
@@ -79,7 +92,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             ) : (
-              // ICÔNE CROIX
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-6 h-6 text-nuit"
@@ -131,7 +143,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="max-w-5xl mx-auto px-4 py-8 text-[12px] text-gray-700 flex flex-col md:flex-row justify-between items-center gap-3">
 
           <span className="opacity-80">
-            © {new Date().getFullYear()} Unité pastorale Gilly-Ransart — Tous droits réservés.
+            © {new Date().getFullYear()} Unité pastorale Gilly – Ransart – Hamendes — Tous droits réservés.
           </span>
 
           <div className="flex items-center gap-4">
@@ -153,6 +165,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
+
     </div>
   );
 }
