@@ -3,11 +3,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  // Vérification de la session
-  const session = cookies().get("admin-session");
+  // Vérification correcte de la session
+  const session = cookies().get("admin_auth");
 
-  if (!session) {
-    redirect("/login");
+  if (!session || session.value !== "true") {
+    redirect("/admin/login");
   }
 
   return (
@@ -49,9 +49,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <a href="/admin/contact" className="block px-3 py-2 rounded-lg hover:bg-white/10">
             Contacts (page publique)
           </a>
-
-          
-
 
         </nav>
       </aside>
